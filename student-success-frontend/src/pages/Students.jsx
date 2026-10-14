@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../api";
-import "./Students.css";
+import "./students.css";
 
 function getRecords(data) {
   if (Array.isArray(data)) return data;
