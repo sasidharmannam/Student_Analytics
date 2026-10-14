@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Success Analytics</title>
+<style>
+:root {
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --text: #18243b;
+  --muted: #718096;
+  --blue: #4361ee;
+  --border: #e6ebf2;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+header {
+  background: #172554;
+  color: white;
+  padding: 22px 5%;
+}
+header h1 { margin: 0 0 7px; font-size: 25px; }
+header p { margin: 0; color: #cbd5e1; font-size: 14px; }
+main { max-width: 1200px; margin: auto; padding: 28px 20px; }
+.section-title { margin: 0 0 16px; font-size: 19px; }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.card, .panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 3px 12px #17255408;
+}
+.card .label { color: var(--muted); font-size: 13px; }
+.card .value { font-size: 30px; font-weight: 700; margin-top: 12px; }
+.card .note { color: var(--muted); font-size: 12px; margin-top: 7px; }
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.panel h3 { margin: 0 0 18px; font-size: 16px; }
+.metric { margin: 17px 0; }
+.metric-top {
+  display: flex; justify-content: space-between;
+  gap: 12px; font-size: 13px; margin-bottom: 8px;
+}
+.track { height: 9px; border-radius: 20px; background: #edf0f7; overflow: hidden; }
+.bar { height: 100%; border-radius: 20px; background: var(--blue); }
+.bar.green { background: #10b981; }
+.bar.orange { background: #f59e0b; }
+.bar.purple { background: #8b5cf6; }
+.toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 15px;
+}
+input, select {
+  padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: 8px; background: white; font-size: 14px;
+}
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 13px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 600; background: #f9fafc; }
+.pill {
+  padding: 5px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 600; display: inline-block;
+}
+.good { color: #047857; background: #d1fae5; }
+.medium { color: #92400e; background: #fef3c7; }
+.risk { color: #b91c1c; background: #fee2e2; }
+.status { font-size: 12px; color: var(--muted); margin-top: 12px; }
+footer { text-align: center; color: var(--muted); font-size: 12px; padding: 25px; }
+@media (max-width: 760px) {
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .content-grid { grid-template-columns: 1fr; }
+  header h1 { font-size: 21px; }
+}
+@media (max-width: 380px) {
+  .cards { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Student Success Analytics</h1>
+  <p>Academic performance · Attendance · Learning engagement · Placement readiness</p>
+</header>
+
+<main>
+  <h2 class="section-title">Institution overview</h2>
+  <section class="cards">
+    <div class="card">
+      <div class="label">Total students</div>
+      <div class="value" id="total">—</div>
+      <div class="note">Students in the dataset</div>
+    </div>
+    <div class="card">
+      <div class="label">Average CGPA</div>
+      <div class="value" id="cgpa">—</div>
+      <div class="note">Across available records</div>
+    </div>
+    <div class="card">
+      <div class="label">Average attendance</div>
+      <div class="value" id="attendance">—</div>
+      <div class="note">Attendance percentage</div>
+    </div>
+    <div class="card">
+      <div class="label">Average placement readiness</div>
+      <div class="value" id="readiness">—</div>
+      <div class="note">Readiness score out of 100</div>
+    </div>
+  </section>
+
+  <div class="content-grid">
+    <section class="panel">
+      <h3>Academic and engagement averages</h3>
+      <div id="metrics">
+        <p class="status">Loading student metrics...</p>
+      </div>
+    </section>
+    <section class="panel">
+      <h3>Student support overview</h3>
+      <p style="color:#718096;font-size:13px">
+        Preliminary indicators based on attendance and academic performance.
+        These flags are intended to help prioritize support, not make final
+        decisions about students.
+      </p>
+      <div id="support">
+        <p class="status">Calculating indicators...</p>
+      </div>
+      <p class="status">Rules-based indicators; not an AI diagnosis.</p>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="toolbar">
+      <h3 style="margin:0">Student records</h3>
+      <input id="search" placeholder="Search student ID or department..." />
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Student ID</th><th>Department</th><th>CGPA</th>
+            <th>Attendance</th><th>Placement readiness</th><th>Indicator</th>
+          </tr>
+        </thead>
+        <tbody id="studentRows">
+          <tr><td colspan="6">Loading student records...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p id="tableStatus" class="status">Connecting to the API...</p>
+  </section>
+</main>
+<footer>Student Success Platform · Synthetic hackathon dataset</footer>
+
+<script>
+const API = "";
+let allStudents = [];
+
+function numberValue(row, key) {
+  const value = Number(row[key]);
+  return row[key] !== null && row[key] !== "" && Number.isFinite(value)
+    ? value : null;
+}
+
+function average(rows, key) {
+  const values = rows.map(r => numberValue(r, key))
+    .filter(v => v !== null);
+  if (!values.length) return null;
+  return values.reduce((a, b) => a + b, 0) / values.length;
+}
+
+function display(value, digits = 1) {
+  return value === null ? "N/A" : value.toFixed(digits);
+}
+
+function setText(id, value) {
+  document.getElementById(id).textContent = value;
+}
+
+function metric(label, value, color) {
+  const shown = value === null ? 0 : Math.max(0, Math.min(100, value));
+  return `<div class="metric">
+    <div class="metric-top"><span>${label}</span>
+    <strong>${display(value)}${value === null ? "" : "%"}</strong></div>
+    <div class="track"><div class="bar ${color}" style="width:${shown}%"></div></div>
+  </div>`;
+}
+
+function getIndicator(row) {
+  const attendance = numberValue(row, "overall_attendance_pct");
+  const cgpa = numberValue(row, "cgpa");
+
+  if ((attendance !== null && attendance < 65) ||
+      (cgpa !== null && cgpa < 5)) {
+    return { label: "Needs review", cls: "risk" };
+  }
+  if ((attendance !== null && attendance < 75) ||
+      (cgpa !== null && cgpa < 6)) {
+    return { label: "Monitor", cls: "medium" };
+  }
+  return { label: "No current flag", cls: "good" };
+}
+
+function renderDashboard(rows) {
+  setText("total", rows.length.toLocaleString());
+  setText("cgpa", display(average(rows, "cgpa")));
+  const attendance = average(rows, "overall_attendance_pct");
+  const readiness = average(rows, "placement_readiness_score_100");
+
+  setText("attendance", attendance === null ? "N/A" : display(attendance) + "%");
+  setText("readiness", readiness === null ? "N/A" : display(readiness));
+
+  document.getElementById("metrics").innerHTML =
+    metric("Attendance", attendance, "green") +
+    metric("Learning activity", average(rows, "learning_activity_score_100"), "purple") +
+    metric("Assignment completion", average(rows, "assignment_completion_pct"), "") +
+    metric("Placement readiness", readiness, "orange");
+
+  const flagged = rows.filter(r => getIndicator(r).cls === "risk").length;
+  const monitored = rows.filter(r => getIndicator(r).cls === "medium").length;
+  document.getElementById("support").innerHTML =
+    metric("Needs review", rows.length ? flagged / rows.length * 100 : 0, "orange") +
+    `<p>${flagged} students flagged for review and ${monitored} for monitoring.</p>`;
+
+  renderTable();
+}
+
+function renderTable() {
+  const query = document.getElementById("search").value.toLowerCase();
+  const filtered = allStudents.filter(row =>
+    String(row.student_id ?? "").toLowerCase().includes(query) ||
+    String(row.department ?? "").toLowerCase().includes(query)
+  );
+
+  const visible = filtered.slice(0, 100);
+  document.getElementById("studentRows").innerHTML = visible.map(row => {
+    const indicator = getIndicator(row);
+    const cgpa = numberValue(row, "cgpa");
+    const attendance = numberValue(row, "overall_attendance_pct");
+    const readiness = numberValue(row, "placement_readiness_score_100");
+
+    return `<tr>
+      <td>${escapeHtml(row.student_id)}</td>
+      <td>${escapeHtml(row.department ?? "N/A")}</td>
+      <td>${display(cgpa)}</td>
+      <td>${attendance === null ? "N/A" : display(attendance) + "%"}</td>
+      <td>${display(readiness)}</td>
+      <td><span class="pill ${indicator.cls}">${indicator.label}</span></td>
+    </tr>`;
+  }).join("") || '<tr><td colspan="6">No matching students found.</td></tr>';
+
+  setText("tableStatus",
+    `Showing ${visible.length} of ${filtered.length} matching records.`
+  );
+}
+
+function escapeHtml(value) {
+  return String(value ?? "N/A").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+
+async function loadDashboard() {
+  try {
+    const response = await fetch(API + "/students?limit=500");
+    if (!response.ok) throw new Error("Student endpoint returned " + response.status);
+
+    const data = await response.json();
+    allStudents = data.students || [];
+
+    // Load additional batches so the dashboard can summarize all students.
+    for (let offset = 500; offset < data.total; offset += 500) {
+      const next = await fetch(API + `/students?limit=500&offset=${offset}`);
+      if (!next.ok) throw new Error("Could not load all student records");
+      const batch = await next.json();
+      allStudents.push(...(batch.students || []));
+    }
+
+    renderDashboard(allStudents);
+    setText("tableStatus", `Loaded ${allStudents.length} student records.`);
+  } catch (error) {
+    document.getElementById("studentRows").innerHTML =
+      `<tr><td colspan="6">Could not load data: ${escapeHtml(error.message)}</td></tr>`;
+    setText("total", "Error");
+    setText("tableStatus", "Check that the backend API is running and the dashboard is mounted.");
+  }
+}
+
+document.getElementById("search").addEventListener("input", renderTable);
+loadDashboard();
+</script>
+</body>
+</html>
